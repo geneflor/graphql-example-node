@@ -1,33 +1,20 @@
 import * as db from './hrdb.js';
-import { RequestHandler } from 'express';
+import { RequestHandler, Request } from 'express';
 
-// const list = (f: () => any) => (request: Request, response: Response) => {
-//     response.status(200).json(f());
-// }
-
-export const getDepartments: RequestHandler = (request, response) => {
-    const result = db.getDepartments();
-
-    response.status(200).json(result);
+function handlerFactory(responseSupplier: (request: Request) => any): RequestHandler {
+    return (request, response) => {
+        response.status(200).json(responseSupplier(request));
+    }
 }
 
-export const getDepartmentById: RequestHandler = (request, response) => {
-    const id = parseInt(request.params.id);
-    const result = db.getDepartmentById(id);
+export const getDepartments =
+    handlerFactory(() => db.getDepartments())
 
-    response.status(200).json(result);
-}
+export const getDepartmentById =
+    handlerFactory((request) => db.getDepartmentById(parseInt(request.params.id)))
 
-export const getEmployees: RequestHandler = (request, response) => {
-    const result = db.getEmployees();
+export const getEmployees =
+    handlerFactory(() => db.getEmployees())
 
-    response.status(200).json(result);
-}
-
-export const getEmployeeById: RequestHandler = (request, response) => {
-    const id = parseInt(request.params.id);
-    const result = db.getEmployeeById(id);
-
-    response.status(200).json(result);
-}
-
+export const getEmployeeById =
+    handlerFactory((request) => db.getEmployeeById(parseInt(request.params.id)))
