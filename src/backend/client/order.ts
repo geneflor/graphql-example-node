@@ -3,9 +3,16 @@ export type TrackingInfo = {
     deliveryDate: string;
 }
 
+export type LineItem = {
+    product: string;
+    quantity: number;
+    price: number;
+    categoryId: number;
+}
+
 export type Order = {
     id: number;
-    categoryId: number;
     orderDate: string;
-    tracking: TrackingInfo;
+    items: LineItem[];
+    tracking?: TrackingInfo;
 }

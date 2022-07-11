@@ -1,64 +1,99 @@
 import {
-    GraphQLSchema,
+    GraphQLFloat,
+    GraphQLID,
+    GraphQLInt,
+    GraphQLList,
     GraphQLObjectType,
-    GraphQLString,
-    GraphQLID, GraphQLList, GraphQLFieldResolver
+    GraphQLSchema,
+    GraphQLString
 } from 'graphql'
 
-import fetch from 'node-fetch'
-
-import { Category } from '../backend/client/category'
-
-const REST_URL = 'http://localhost:3000'
-
-type TArgs = { [argName: string]: any }
-
-const getJson = (path: string) => fetch(`${REST_URL}/${path}`).then(res => res.json())
-
-const resolveById = (res: string) => (root: any, args: TArgs) => getJson(`${res}/${args.id}/`)
-
-const resolveList = (res: string) => () => getJson(`${res}/`)
+import {Category} from '../backend/client/category'
+import {getJson, resolveById, resolveList} from "./schema-utils";
+import {findOrdersByLineItemCategory} from "./impl";
+import {LineItem} from "../backend/client/order";
 
 const CategoryType = new GraphQLObjectType({
     name: 'Category',
-    description: 'Category Object Type',
+    description: 'Category type',
     fields: {
-        id: { type: GraphQLID },
-        name: { type: GraphQLString }
+        id: {
+            description: 'Primary key',
+            type: GraphQLID
+        },
+        name: {
+            description: 'User-visible category name',
+            type: GraphQLString
+        }
     }
 })
 
 const TrackingInfoType = new GraphQLObjectType({
     name: 'TrackingInfo',
-    description: 'Tracking Info Object Type',
+    description: 'Tracking information',
     fields: {
-        carrier: { type: GraphQLString },
-        deliveryDate: { type: GraphQLString }
+        carrier: {
+            description: 'Shipping carrier name',
+            type: GraphQLString
+        },
+        deliveryDate: {
+            description: 'Scheduled delivery date',
+            type: GraphQLString
+        }
+    }
+})
+
+const LineItemType = new GraphQLObjectType({
+    name: 'LineItem',
+    description: 'Order line item',
+    fields: {
+        product: {
+            description: 'Product name',
+            type: GraphQLString
+        },
+        price: {
+            description: 'Item price',
+            type: GraphQLFloat
+        },
+        quantity: {
+            description: 'Quantity',
+            type: GraphQLInt
+        },
+        category: {
+            description: 'Product category in Product Catalog',
+            type: CategoryType,
+            resolve: (item: LineItem) => getJson(`category/${item.categoryId}/`)
+        }
     }
 })
 
 const OrderType = new GraphQLObjectType({
     name: 'Order',
-    description: 'Order Object Type',
+    description: 'Order type',
     fields: {
-        id: { type: GraphQLID },
-        category: {
-            type: CategoryType,
-            resolve: (category: Category) => getJson(`category/${category.id}/`)
+        id: {
+            description: 'Primary key',
+            type: GraphQLID
         },
-        orderDate: { type: GraphQLString },
+        orderDate: {
+            description: 'Date order placed',
+            type: GraphQLString
+        },
+        items: {
+            description: 'Line items ordered',
+            type: new GraphQLList(LineItemType)
+        },
         tracking: {
+            description: 'Tracking information, available once order is shipped',
             type: TrackingInfoType
         }
     }
 })
 
-let findOrdersByLineItemCategory = (root: any, args: TArgs) => [ getJson(`order/1/`) ];
-
 export default new GraphQLSchema({
     query: new GraphQLObjectType({
-        name: 'Queries',
-        description: 'My description',
+        name: 'OrderTrackingApp',
+        description: 'Order Tracking - Digital Assistant - GraphQL API',
         fields: {
             orders: {
                 type: GraphQLList(OrderType),
