@@ -26,7 +26,7 @@ export const orders: Order[] = [
         id: 1389,
         orderDate: '07/03/2022',
         items: [
-            { product: 'ORACLE coffee mug', price: 12.50, quantity: 4, categoryId: 3 },
+            { product: 'ORACLE coffee mug', price: 12.50, quantity: 4, categoryId: 4 },
         ],
         tracking: {carrier: "UPS", deliveryDate: '07/12/2022'}
     },

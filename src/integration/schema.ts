@@ -9,8 +9,8 @@ import {
 } from 'graphql'
 
 import {Category} from '../backend/client/category'
-import {getJson, resolveById, resolveList} from "./schema-utils";
-import {findOrdersByLineItemCategory} from "./impl";
+import {resolveList, TArgs} from "./schema-utils";
+import {findOrdersByLineItemCategory, getCategoryById} from "./impl";
 import {LineItem} from "../backend/client/order";
 
 const CategoryType = new GraphQLObjectType({
@@ -62,7 +62,7 @@ const LineItemType = new GraphQLObjectType({
         category: {
             description: 'Product category in Product Catalog',
             type: CategoryType,
-            resolve: (item: LineItem) => getJson(`category/${item.categoryId}/`)
+            resolve: (item: LineItem) => getCategoryById(item.categoryId)
         }
     }
 })
@@ -97,19 +97,19 @@ export default new GraphQLSchema({
         fields: {
             orders: {
                 type: GraphQLList(OrderType),
-                resolve: resolveList("order")
+                resolve: resolveList('order')
             },
 
             orderByItemCategory: {
-                description: "Retrieves recent orders by line item category",
+                description: 'Retrieves recent orders by line item category',
                 type: GraphQLList(OrderType),
                 args: {
-                    lineItemCategory: {
-                        description: "A string matched to the category name of ordered items",
+                    lineItemCategoryName: {
+                        description: 'A string matched to the category name of ordered items',
                         type: GraphQLString
                     }
                 },
-                resolve: findOrdersByLineItemCategory
+                resolve: (root: any, args: TArgs) => findOrdersByLineItemCategory(args.lineItemCategoryName)
             }
         }
     })

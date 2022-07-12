@@ -1,2 +1,2 @@
-import './integration/gql'
+import './integration/gql-server'
 import './backend/server/server'
