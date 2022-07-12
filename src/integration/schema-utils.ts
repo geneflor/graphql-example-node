@@ -1,4 +1,5 @@
 import fetch from 'node-fetch'
+import {Order} from "../backend/client/order";
 
 const REST_URL = 'http://localhost:3000'
 
@@ -10,4 +11,26 @@ export function getJson(path: string) {
 
 export function resolveList(res: string) {
     return () => getJson(`${res}/`);
+}
+
+export async function asyncFilter<T>(array: T[], predicate: (arg: T) => Promise<boolean>): Promise<T[]> {
+    const result: T[] = [];
+
+    for (const elem of array) {
+        if (await predicate(elem)) {
+            result.push(elem);
+        }
+    }
+
+    return result;
+}
+
+export async function asyncContains<T>(array: T[], predicate: (arg: T) => Promise<boolean>): Promise<boolean> {
+    for (const elem of array) {
+        if (await predicate(elem)) {
+            return true;
+        }
+    }
+
+    return false;
 }
